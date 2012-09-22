@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT([glbdump], [0.01], [oda.org@gmail.com])
+AC_INIT([glbdump], [0.02], [oda.org@gmail.com])
 AC_CONFIG_AUX_DIR([libltdl/config])
 AM_INIT_AUTOMAKE([0.01 dist-bzip2])
 AC_CONFIG_SRCDIR([glbdump.cc])
