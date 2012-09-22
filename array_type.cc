@@ -108,7 +108,7 @@ ArrayType::dumpDataSub(void* data, Dwarf_Unsigned size, int level,
 
 	  if (level == 0)
 	    {
-	      baseType_->dumpData(p, indent, out);
+	      baseType_->dumpData(p, indent + 1, out);
 	    }
 	  else
 	    {
