@@ -2,6 +2,7 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
+#include <limits>
 
 #include <dwarf.h>
 #include <libdwarf.h>
@@ -57,17 +58,31 @@ ArrayType::init(Dwarf_Debug dbg, map<Dwarf_Off, Type*>& types)
   for (;;)
     {
       rc = dwarf_attr(subrange, DW_AT_upper_bound, &uboundAttr, &err);
-      assert(rc == DW_DLV_OK);
-      rc = dwarf_formudata(uboundAttr, &ubound, &err);
-      assert(rc == DW_DLV_OK);
-      length_.push_back(ubound + 1);
-
-      rc = dwarf_siblingof(dbg, subrange, &subrange, &err);
       assert(rc == DW_DLV_OK || rc == DW_DLV_NO_ENTRY);
       if (rc == DW_DLV_NO_ENTRY)
-	{
-	  break;
-	}
+        {
+          length_.push_back(0);
+        }
+      else
+        {
+          rc = dwarf_formudata(uboundAttr, &ubound, &err);
+          assert(rc == DW_DLV_OK);
+          if (ubound == std::numeric_limits<size_t>::max())
+            {
+              length_.push_back(0);
+            }
+          else
+            {
+              length_.push_back(ubound + 1);
+            }
+
+          rc = dwarf_siblingof(dbg, subrange, &subrange, &err);
+          assert(rc == DW_DLV_OK || rc == DW_DLV_NO_ENTRY);
+          if (rc == DW_DLV_NO_ENTRY)
+            {
+              break;
+            }
+        }
     }
 
   std::reverse(length_.begin(), length_.end());
@@ -79,8 +94,18 @@ int
 ArrayType::dumpData(void* data, int indent, ostream& out)
 {
   Dwarf_Unsigned size = this->size();
-  return dumpDataSub(data, size / length_[length_.size() - 1],
-		     length_.size() - 1, indent, out);
+  Dwarf_Unsigned unitSize;
+
+  if (length_.back() != 0)
+    {
+      unitSize = size / length_.back();
+    }
+  else
+    {
+      unitSize = 0;
+    }
+
+  return dumpDataSub(data, unitSize, length_.size() - 1, indent, out);
 }
 
 int
